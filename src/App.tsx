@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { initializeSampleData } from './data/mockData';
@@ -66,6 +67,17 @@ function AppContent() {
           {renderSection()}
         </main>
       </div>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: 'var(--toast-bg)',
+            color: 'var(--toast-color)',
+            border: '1px solid var(--toast-border)',
+          },
+        }}
+      />
     </div>
   );
 }
