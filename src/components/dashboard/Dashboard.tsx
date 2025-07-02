@@ -1,18 +1,42 @@
 import React from 'react';
 import { 
-  Users, 
-  UserCheck, 
-  TrendingUp, 
-  AlertTriangle,
-  Calendar,
-  Dumbbell,
-  DollarSign,
-  Activity
-} from 'lucide-react';
+  Row, 
+  Col, 
+  Card, 
+  Statistic, 
+  Progress, 
+  Typography, 
+  Space, 
+  Button,
+  Avatar,
+  List,
+  Tag,
+  Divider,
+  Alert,
+  Timeline,
+  Badge
+} from 'antd';
+import { 
+  UserOutlined,
+  UserAddOutlined,
+  TrophyOutlined,
+  DollarOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  ToolOutlined,
+  BellOutlined,
+  RightOutlined,
+  FireOutlined,
+  ThunderboltOutlined
+} from '@ant-design/icons';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import StatsCard from './StatsCard';
 import { useAuth } from '../../contexts/AuthContext';
 import { mockDashboardStats, monthlyRevenueData, membershipDistribution } from '../../data/mockData';
+import { motion } from 'framer-motion';
+
+const { Title, Text } = Typography;
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -21,175 +45,491 @@ export default function Dashboard() {
     switch (user?.role) {
       case 'trainer':
         return [
-          { title: 'Tayinlangan A\'zolar', value: 15, icon: Users, color: 'primary' as const },
-          { title: 'Bugungi Mashg\'ulotlar', value: 3, icon: Calendar, color: 'secondary' as const },
-          { title: 'Oylik Komissiya', value: '1,250,000 UZS', icon: DollarSign, color: 'accent' as const },
-          { title: 'Reyting', value: '4.8/5', icon: Activity, color: 'warning' as const }
+          { 
+            title: 'Tayinlangan A\'zolar', 
+            value: 15, 
+            icon: <TeamOutlined />, 
+            color: '#3b82f6',
+            change: '+2 bu hafta',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Bugungi Mashg\'ulotlar', 
+            value: 3, 
+            icon: <CalendarOutlined />, 
+            color: '#10b981',
+            change: '2 ta qoldi',
+            changeType: 'neutral'
+          },
+          { 
+            title: 'Oylik Komissiya', 
+            value: '1,250,000', 
+            suffix: 'UZS',
+            icon: <DollarOutlined />, 
+            color: '#f59e0b',
+            change: '+15%',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Reyting', 
+            value: 4.8, 
+            suffix: '/5',
+            icon: <TrophyOutlined />, 
+            color: '#ec4899',
+            change: '+0.2',
+            changeType: 'increase'
+          }
         ];
       case 'receptionist':
         return [
-          { title: 'Kunlik Tashrif', value: 42, icon: UserCheck, color: 'primary' as const },
-          { title: 'Yangi Ro\'yxatlar', value: 5, icon: Users, color: 'secondary' as const },
-          { title: 'Bugungi To\'lovlar', value: '3,200,000 UZS', icon: DollarSign, color: 'accent' as const },
-          { title: 'Kutilayotgan Vazifalar', value: 7, icon: AlertTriangle, color: 'warning' as const }
+          { 
+            title: 'Kunlik Tashrif', 
+            value: 42, 
+            icon: <UserAddOutlined />, 
+            color: '#3b82f6',
+            change: '+8 kecha',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Yangi Ro\'yxatlar', 
+            value: 5, 
+            icon: <TeamOutlined />, 
+            color: '#10b981',
+            change: 'Bugun',
+            changeType: 'neutral'
+          },
+          { 
+            title: 'Bugungi To\'lovlar', 
+            value: '3,200,000', 
+            suffix: 'UZS',
+            icon: <DollarOutlined />, 
+            color: '#f59e0b',
+            change: '+12%',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Kutilayotgan Vazifalar', 
+            value: 7, 
+            icon: <BellOutlined />, 
+            color: '#ef4444',
+            change: '2 ta muhim',
+            changeType: 'decrease'
+          }
         ];
       case 'member':
         return [
-          { title: 'Tashrif Kunlari', value: 18, icon: Activity, color: 'primary' as const },
-          { title: 'Qatnashgan Mashg\'ulotlar', value: 12, icon: Calendar, color: 'secondary' as const },
-          { title: 'A\'zolik Qolgan Kunlar', value: 45, icon: Users, color: 'accent' as const },
-          { title: 'Yoqilgan Kaloriya', value: '12,450', icon: TrendingUp, color: 'warning' as const }
+          { 
+            title: 'Tashrif Kunlari', 
+            value: 18, 
+            icon: <FireOutlined />, 
+            color: '#3b82f6',
+            change: 'Bu oy',
+            changeType: 'neutral'
+          },
+          { 
+            title: 'Qatnashgan Mashg\'ulotlar', 
+            value: 12, 
+            icon: <CalendarOutlined />, 
+            color: '#10b981',
+            change: '+3 bu hafta',
+            changeType: 'increase'
+          },
+          { 
+            title: 'A\'zolik Qolgan Kunlar', 
+            value: 45, 
+            icon: <UserOutlined />, 
+            color: '#f59e0b',
+            change: '1.5 oy',
+            changeType: 'neutral'
+          },
+          { 
+            title: 'Yoqilgan Kaloriya', 
+            value: '12,450', 
+            icon: <ThunderboltOutlined />, 
+            color: '#ec4899',
+            change: '+850 bugun',
+            changeType: 'increase'
+          }
         ];
       default:
         return [
-          { title: 'Jami A\'zolar', value: mockDashboardStats.totalMembers, icon: Users, color: 'primary' as const, change: '+12 bu oy', changeType: 'positive' as const },
-          { title: 'Faol A\'zolar', value: mockDashboardStats.activeMembers, icon: UserCheck, color: 'secondary' as const, change: '+5.2%', changeType: 'positive' as const },
-          { title: 'Oylik Daromad', value: `${(mockDashboardStats.monthlyRevenue / 1000000).toFixed(1)}M UZS`, icon: TrendingUp, color: 'accent' as const, change: '+8.1%', changeType: 'positive' as const },
-          { title: 'Muddati Tugaydi', value: mockDashboardStats.expiringThisMonth, icon: AlertTriangle, color: 'warning' as const, change: 'E\'tibor talab qiladi', changeType: 'neutral' as const }
+          { 
+            title: 'Jami A\'zolar', 
+            value: mockDashboardStats.totalMembers, 
+            icon: <TeamOutlined />, 
+            color: '#3b82f6',
+            change: '+12 bu oy',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Faol A\'zolar', 
+            value: mockDashboardStats.activeMembers, 
+            icon: <UserAddOutlined />, 
+            color: '#10b981',
+            change: '+5.2%',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Oylik Daromad', 
+            value: `${(mockDashboardStats.monthlyRevenue / 1000000).toFixed(1)}M`, 
+            suffix: 'UZS',
+            icon: <DollarOutlined />, 
+            color: '#f59e0b',
+            change: '+8.1%',
+            changeType: 'increase'
+          },
+          { 
+            title: 'Muddati Tugaydi', 
+            value: mockDashboardStats.expiringThisMonth, 
+            icon: <BellOutlined />, 
+            color: '#ef4444',
+            change: 'E\'tibor talab qiladi',
+            changeType: 'decrease'
+          }
         ];
     }
   };
 
   const stats = getStatsForRole();
 
+  const recentActivities = [
+    { type: 'member', content: 'Yangi a\'zo: Sardor Abdullayev', time: '5 daqiqa oldin', color: 'blue' },
+    { type: 'payment', content: 'To\'lov qabul qilindi: 300,000 UZS', time: '15 daqiqa oldin', color: 'green' },
+    { type: 'class', content: 'Morning Yoga mashg\'uloti boshlandi', time: '30 daqiqa oldin', color: 'purple' },
+    { type: 'equipment', content: 'Treadmill #3 ta\'mirga yuborildi', time: '1 soat oldin', color: 'orange' },
+  ];
+
+  const upcomingClasses = [
+    { name: 'HIIT Fitness', time: '14:00', trainer: 'Aziza Nazarova', enrolled: 12, capacity: 15 },
+    { name: 'Boxing Fundamentals', time: '16:00', trainer: 'Dilshod Umarov', enrolled: 8, capacity: 12 },
+    { name: 'Zumba Party', time: '18:00', trainer: 'Feruza Qodirova', enrolled: 22, capacity: 25 },
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Xush kelibsiz, {user?.name}!
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Bugun sport zalingizda nima bo'layotgani haqida ma'lumot.
-          </p>
-        </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date().toLocaleDateString('uz-UZ', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="bg-gradient-to-r from-blue-500 to-purple-600 border-0">
+          <div className="text-white">
+            <Space direction="vertical" size="small">
+              <Title level={2} className="!text-white !mb-0">
+                Xush kelibsiz, {user?.name}! 👋
+              </Title>
+              <Text className="text-blue-100 text-lg">
+                Bugun sport zalingizda nima bo'layotgani haqida ma'lumot
+              </Text>
+              <Text className="text-blue-200">
+                {new Date().toLocaleDateString('uz-UZ', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </Text>
+            </Space>
+          </div>
+        </Card>
+      </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Row gutter={[24, 24]}>
         {stats.map((stat, index) => (
-          <StatsCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            color={stat.color}
-          />
-        ))}
-      </div>
-
-      {/* Charts Section - Only for Admin and Manager */}
-      {user?.role && ['admin', 'manager'].includes(user.role) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Chart */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Oylik Daromad
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyRevenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-                <XAxis dataKey="month" stroke="#6B7280" />
-                <YAxis stroke="#6B7280" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
-                    border: 'none', 
-                    borderRadius: '8px',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)'
+          <Col xs={24} sm={12} lg={6} key={index}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <Statistic
+                  title={stat.title}
+                  value={stat.value}
+                  suffix={stat.suffix}
+                  prefix={
+                    <div 
+                      className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-lg"
+                      style={{ backgroundColor: stat.color }}
+                    >
+                      {stat.icon}
+                    </div>
+                  }
+                  valueStyle={{ 
+                    color: stat.color,
+                    fontSize: '24px',
+                    fontWeight: 'bold'
                   }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3B82F6" 
-                  fill="url(#colorRevenue)" 
-                />
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+                <div className="mt-3 flex items-center gap-2">
+                  {stat.changeType === 'increase' && <ArrowUpOutlined className="text-green-500" />}
+                  {stat.changeType === 'decrease' && <ArrowDownOutlined className="text-red-500" />}
+                  <Text 
+                    type={stat.changeType === 'increase' ? 'success' : 
+                         stat.changeType === 'decrease' ? 'danger' : 'secondary'}
+                    className="text-sm"
+                  >
+                    {stat.change}
+                  </Text>
+                </div>
+              </Card>
+            </motion.div>
+          </Col>
+        ))}
+      </Row>
 
-          {/* Membership Distribution */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              A'zolik Taqsimoti
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={membershipDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name} (${value}%)`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {membershipDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+      {/* Charts and Activities */}
+      <Row gutter={[24, 24]}>
+        {/* Revenue Chart */}
+        {user?.role && ['admin', 'manager'].includes(user.role) && (
+          <Col xs={24} lg={16}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Card 
+                title={
+                  <Space>
+                    <DollarOutlined className="text-green-500" />
+                    <span>Oylik Daromad Dinamikasi</span>
+                  </Space>
+                }
+                extra={
+                  <Button type="link" icon={<RightOutlined />}>
+                    Batafsil
+                  </Button>
+                }
+              >
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={monthlyRevenueData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="month" stroke="#8c8c8c" />
+                    <YAxis stroke="#8c8c8c" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #d9d9d9', 
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="#3b82f6" 
+                      fill="url(#colorRevenue)" 
+                      strokeWidth={3}
+                    />
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Card>
+            </motion.div>
+          </Col>
+        )}
 
-      {/* Additional Stats for Admin/Manager */}
+        {/* Recent Activities */}
+        <Col xs={24} lg={user?.role && ['admin', 'manager'].includes(user.role) ? 8 : 12}>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card 
+              title={
+                <Space>
+                  <BellOutlined className="text-blue-500" />
+                  <span>So'nggi Faoliyat</span>
+                </Space>
+              }
+              extra={
+                <Button type="link" icon={<RightOutlined />}>
+                  Barchasini ko'rish
+                </Button>
+              }
+            >
+              <Timeline
+                items={recentActivities.map((activity, index) => ({
+                  dot: <Badge color={activity.color} />,
+                  children: (
+                    <div key={index}>
+                      <Text strong className="text-sm">{activity.content}</Text>
+                      <br />
+                      <Text type="secondary" className="text-xs">{activity.time}</Text>
+                    </div>
+                  )
+                }))}
+              />
+            </Card>
+          </motion.div>
+        </Col>
+
+        {/* Upcoming Classes */}
+        <Col xs={24} lg={user?.role && ['admin', 'manager'].includes(user.role) ? 24 : 12}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <Card 
+              title={
+                <Space>
+                  <CalendarOutlined className="text-purple-500" />
+                  <span>Bugungi Mashg'ulotlar</span>
+                </Space>
+              }
+              extra={
+                <Button type="link" icon={<RightOutlined />}>
+                  Jadvalni ko'rish
+                </Button>
+              }
+            >
+              <List
+                dataSource={upcomingClasses}
+                renderItem={(item) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center text-white font-bold">
+                          {item.time}
+                        </div>
+                      }
+                      title={
+                        <Space>
+                          <Text strong>{item.name}</Text>
+                          <Tag color="blue">{item.trainer}</Tag>
+                        </Space>
+                      }
+                      description={
+                        <Space>
+                          <Text type="secondary">{item.enrolled}/{item.capacity} a'zo</Text>
+                          <Progress 
+                            percent={Math.round((item.enrolled / item.capacity) * 100)} 
+                            size="small" 
+                            showInfo={false}
+                            strokeColor={{
+                              '0%': '#87d068',
+                              '100%': '#108ee9',
+                            }}
+                          />
+                        </Space>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            </Card>
+          </motion.div>
+        </Col>
+      </Row>
+
+      {/* Membership Distribution - Only for Admin/Manager */}
       {user?.role && ['admin', 'manager'].includes(user.role) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatsCard
-            title="Jami Murabbiylar"
-            value={mockDashboardStats.totalTrainers}
-            icon={UserCheck}
-            color="secondary"
-            change="Hammasi faol"
-            changeType="positive"
-          />
-          <StatsCard
-            title="Faol Mashg'ulotlar"
-            value={mockDashboardStats.activeClasses}
-            icon={Calendar}
-            color="primary"
-            change="3 ta yangi bu hafta"
-            changeType="positive"
-          />
-          <StatsCard
-            title="Ishlaydigan Jihozlar"
-            value={mockDashboardStats.equipmentWorking}
-            icon={Dumbbell}
-            color="secondary"
-            change={`${mockDashboardStats.equipmentMaintenance} ta ta'mirda`}
-            changeType="neutral"
-          />
-          <StatsCard
-            title="Jami Daromad"
-            value={`${(mockDashboardStats.totalRevenue / 1000000).toFixed(0)}M UZS`}
-            icon={DollarSign}
-            color="accent"
-            change="+15.3% o'tgan oyga nisbatan"
-            changeType="positive"
-          />
-        </div>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={12}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Card 
+                title={
+                  <Space>
+                    <UserOutlined className="text-orange-500" />
+                    <span>A'zolik Taqsimoti</span>
+                  </Space>
+                }
+              >
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={membershipDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name} (${value})`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {membershipDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </motion.div>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <Card 
+                title={
+                  <Space>
+                    <ToolOutlined className="text-red-500" />
+                    <span>Jihozlar Holati</span>
+                  </Space>
+                }
+              >
+                <Row gutter={[16, 16]}>
+                  <Col span={8}>
+                    <Card className="text-center bg-green-50 border-green-200">
+                      <Statistic
+                        title="Ishlamoqda"
+                        value={mockDashboardStats.equipmentWorking}
+                        valueStyle={{ color: '#52c41a', fontSize: '24px' }}
+                      />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card className="text-center bg-yellow-50 border-yellow-200">
+                      <Statistic
+                        title="Ta'mirda"
+                        value={mockDashboardStats.equipmentMaintenance}
+                        valueStyle={{ color: '#faad14', fontSize: '24px' }}
+                      />
+                    </Card>
+                  </Col>
+                  <Col span={8}>
+                    <Card className="text-center bg-red-50 border-red-200">
+                      <Statistic
+                        title="Buzilgan"
+                        value={2}
+                        valueStyle={{ color: '#ff4d4f', fontSize: '24px' }}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+                <Divider />
+                <Alert
+                  message="Diqqat!"
+                  description="3 ta jihozning texnik ko'rikdan o'tish vaqti keldi."
+                  type="warning"
+                  showIcon
+                  action={
+                    <Button size="small" type="primary">
+                      Ko'rish
+                    </Button>
+                  }
+                />
+              </Card>
+            </motion.div>
+          </Col>
+        </Row>
       )}
     </div>
   );

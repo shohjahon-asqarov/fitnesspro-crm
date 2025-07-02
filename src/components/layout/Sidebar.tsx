@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu, Avatar, Typography, Space, Badge } from 'antd';
+import { Layout, Menu, Avatar, Typography, Space, Badge, Tooltip } from 'antd';
 import { 
   DashboardOutlined,
   TeamOutlined,
@@ -11,9 +11,12 @@ import {
   BellOutlined,
   BarChartOutlined,
   SettingOutlined,
-  CrownOutlined
+  CrownOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 const { Sider } = Layout;
 const { Title, Text } = Typography;
@@ -21,6 +24,8 @@ const { Title, Text } = Typography;
 interface SidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  collapsed: boolean;
+  onCollapse: (collapsed: boolean) => void;
 }
 
 interface MenuItem {
@@ -28,6 +33,7 @@ interface MenuItem {
   icon: React.ReactNode;
   label: string;
   roles: string[];
+  badge?: number;
 }
 
 const menuItems: MenuItem[] = [
@@ -41,7 +47,8 @@ const menuItems: MenuItem[] = [
     key: 'members',
     icon: <TeamOutlined />,
     label: 'A\'zolar',
-    roles: ['admin', 'manager', 'receptionist']
+    roles: ['admin', 'manager', 'receptionist'],
+    badge: 3
   },
   {
     key: 'trainers',
@@ -59,7 +66,8 @@ const menuItems: MenuItem[] = [
     key: 'payments',
     icon: <CreditCardOutlined />,
     label: 'To\'lovlar',
-    roles: ['admin', 'manager', 'receptionist']
+    roles: ['admin', 'manager', 'receptionist'],
+    badge: 5
   },
   {
     key: 'equipment',
@@ -77,7 +85,8 @@ const menuItems: MenuItem[] = [
     key: 'notifications',
     icon: <BellOutlined />,
     label: 'Bildirishnomalar',
-    roles: ['admin', 'manager', 'receptionist']
+    roles: ['admin', 'manager', 'receptionist'],
+    badge: 2
   },
   {
     key: 'reports',
@@ -93,7 +102,7 @@ const menuItems: MenuItem[] = [
   }
 ];
 
-export default function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+export default function Sidebar({ activeSection, onSectionChange, collapsed, onCollapse }: SidebarProps) {
   const { user } = useAuth();
 
   const filteredMenuItems = menuItems.filter(item => 
@@ -111,43 +120,82 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
     }
   };
 
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin': return '#f59e0b';
+      case 'manager': return '#3b82f6';
+      case 'trainer': return '#10b981';
+      case 'receptionist': return '#ec4899';
+      case 'member': return '#6b7280';
+      default: return '#6b7280';
+    }
+  };
+
   return (
     <Sider
       width={256}
-      className="fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 z-40"
+      collapsedWidth={80}
+      collapsed={collapsed}
+      onCollapse={onCollapse}
+      className="fixed left-0 top-0 h-full z-50"
       style={{
         background: 'var(--ant-color-bg-container)',
         borderRight: '1px solid var(--ant-color-border)',
+        boxShadow: '2px 0 8px 0 rgba(29, 35, 41, 0.05)',
       }}
+      trigger={null}
     >
       <div className="flex flex-col h-full">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <Space align="center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <CrownOutlined className="text-white text-lg" />
-            </div>
-            <div>
-              <Title level={4} className="!mb-0 !text-gray-900 dark:!text-white">
-                FitnessPro
-              </Title>
-              <Text type="secondary" className="text-xs">
-                Sport Zali Boshqaruvi
-              </Text>
-            </div>
-          </Space>
+        {/* Logo and Collapse Button */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            {!collapsed && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Space align="center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <CrownOutlined className="text-white text-lg" />
+                  </div>
+                  <div>
+                    <Title level={4} className="!mb-0 !text-gray-900 dark:!text-white">
+                      FitnessPro
+                    </Title>
+                    <Text type="secondary" className="text-xs">
+                      Sport Zali Boshqaruvi
+                    </Text>
+                  </div>
+                </Space>
+              </motion.div>
+            )}
+            <Tooltip title={collapsed ? 'Kengaytirish' : 'Yig\'ish'} placement="right">
+              <div
+                onClick={() => onCollapse(!collapsed)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+              >
+                {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              </div>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 py-4">
+        <div className="flex-1 py-4 px-2">
           <Menu
             mode="inline"
             selectedKeys={[activeSection]}
             onClick={({ key }) => onSectionChange(key)}
-            style={{ border: 'none' }}
+            style={{ border: 'none', background: 'transparent' }}
+            inlineCollapsed={collapsed}
             items={filteredMenuItems.map(item => ({
               key: item.key,
-              icon: item.icon,
+              icon: item.badge ? (
+                <Badge count={item.badge} size="small" offset={[10, 0]}>
+                  {item.icon}
+                </Badge>
+              ) : item.icon,
               label: item.label,
             }))}
           />
@@ -156,17 +204,43 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
         {/* User Info */}
         {user && (
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <Space className="w-full">
-              <Avatar src={user.avatar} icon={<UserOutlined />} />
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 dark:text-white truncate">
-                  {user.name}
+            {collapsed ? (
+              <Tooltip title={`${user.name} - ${getRoleText(user.role)}`} placement="right">
+                <div className="flex justify-center">
+                  <Badge 
+                    dot 
+                    color={getRoleBadgeColor(user.role)}
+                    offset={[-8, 8]}
+                  >
+                    <Avatar src={user.avatar} icon={<UserOutlined />} size={40} />
+                  </Badge>
                 </div>
-                <Text type="secondary" className="text-xs">
-                  {getRoleText(user.role)}
-                </Text>
-              </div>
-            </Space>
+              </Tooltip>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <Space className="w-full">
+                  <Badge 
+                    dot 
+                    color={getRoleBadgeColor(user.role)}
+                    offset={[-8, 8]}
+                  >
+                    <Avatar src={user.avatar} icon={<UserOutlined />} size={40} />
+                  </Badge>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                      {user.name}
+                    </div>
+                    <Text type="secondary" className="text-xs">
+                      {getRoleText(user.role)}
+                    </Text>
+                  </div>
+                </Space>
+              </motion.div>
+            )}
           </div>
         )}
       </div>
