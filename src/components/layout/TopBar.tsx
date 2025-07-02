@@ -27,7 +27,7 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
   ]);
 
   return (
-    <div className="fixed top-0 left-64 right-0 h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-30">
+    <div className="fixed top-0 left-64 right-0 h-16 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 z-30">
       <div className="flex items-center justify-between h-full px-6">
         {/* Search */}
         <div className="flex-1 max-w-md">

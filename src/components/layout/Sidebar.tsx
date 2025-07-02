@@ -97,7 +97,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
   );
 
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 z-40">
+    <div className="fixed left-0 top-0 h-full w-64 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 z-40">
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="flex items-center gap-3 p-6 border-b border-gray-200/50 dark:border-gray-700/50">
@@ -111,7 +111,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {filteredMenuItems.map((item) => (
             <button
               key={item.id}

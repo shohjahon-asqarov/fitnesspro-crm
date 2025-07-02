@@ -62,7 +62,7 @@ function AppContent() {
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       <div className="flex-1 flex flex-col ml-64">
         <TopBar onSectionChange={setActiveSection} />
-        <main className="flex-1 p-6 pt-22 overflow-auto">
+        <main className="flex-1 p-6 pt-20 overflow-auto">
           {renderSection()}
         </main>
       </div>
