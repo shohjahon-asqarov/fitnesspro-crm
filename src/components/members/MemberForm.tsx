@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Modal, 
+  Form, 
+  Input, 
+  Select, 
+  DatePicker, 
+  InputNumber, 
+  Button, 
+  Space, 
+  Row, 
+  Col,
+  Typography,
+  Divider
+} from 'antd';
+import { UserOutlined, MailOutlined, PhoneOutlined, DollarOutlined } from '@ant-design/icons';
 import { Member, Trainer } from '../../types';
-import { useMembers } from '../../hooks/useMembers';
-import Modal from '../common/Modal';
-import LoadingSpinner from '../common/LoadingSpinner';
-import SearchableSelect from '../common/SearchableSelect';
 import { mockTrainers } from '../../data/mockData';
+import dayjs from 'dayjs';
+
+const { Option } = Select;
+const { Title } = Typography;
 
 interface MemberFormProps {
   isOpen: boolean;
@@ -15,282 +30,291 @@ interface MemberFormProps {
 }
 
 export default function MemberForm({ isOpen, onClose, onSubmit, member, loading = false }: MemberFormProps) {
-  const [formData, setFormData] = useState<Omit<Member, 'id'>>({
-    name: member?.name || '',
-    email: member?.email || '',
-    phone: member?.phone || '',
-    membershipType: member?.membershipType || 'Basic',
-    joinDate: member?.joinDate || new Date().toISOString().split('T')[0],
-    expiryDate: member?.expiryDate || '',
-    status: member?.status || 'active',
-    avatar: member?.avatar || 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100',
-    totalVisits: member?.totalVisits || 0,
-    lastVisit: member?.lastVisit || new Date().toISOString().split('T')[0],
-    trainerId: member?.trainerId || '',
-    monthlyFee: member?.monthlyFee || 200000
-  });
+  const [form] = Form.useForm();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (isOpen) {
+      if (member) {
+        form.setFieldsValue({
+          ...member,
+          joinDate: dayjs(member.joinDate),
+          expiryDate: dayjs(member.expiryDate),
+          lastVisit: dayjs(member.lastVisit),
+        });
+      } else {
+        form.resetFields();
+        // Set default values for new member
+        const today = dayjs();
+        form.setFieldsValue({
+          joinDate: today,
+          membershipType: 'Basic',
+          status: 'active',
+          monthlyFee: 200000,
+          totalVisits: 0,
+          lastVisit: today,
+          avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100'
+        });
+      }
+    }
+  }, [isOpen, member, form]);
+
+  const handleSubmit = async (values: any) => {
     try {
-      await onSubmit(formData);
-      onClose();
+      const memberData = {
+        ...values,
+        joinDate: values.joinDate.format('YYYY-MM-DD'),
+        expiryDate: values.expiryDate.format('YYYY-MM-DD'),
+        lastVisit: values.lastVisit.format('YYYY-MM-DD'),
+      };
+      await onSubmit(memberData);
     } catch (error) {
       console.error('Failed to save member:', error);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'monthlyFee' || name === 'totalVisits' ? Number(value) : value
-    }));
-  };
-
   // Calculate expiry date based on membership type and join date
-  const calculateExpiryDate = (joinDate: string, membershipType: string) => {
-    const join = new Date(joinDate);
-    const expiry = new Date(join);
-    
-    switch (membershipType) {
-      case 'Basic':
-        expiry.setMonth(expiry.getMonth() + 1);
-        break;
-      case 'Pro':
-        expiry.setMonth(expiry.getMonth() + 3);
-        break;
-      case 'Premium':
-        expiry.setFullYear(expiry.getFullYear() + 1);
-        break;
+  const handleMembershipTypeChange = (membershipType: string) => {
+    const joinDate = form.getFieldValue('joinDate');
+    if (joinDate) {
+      const expiry = dayjs(joinDate);
+      switch (membershipType) {
+        case 'Basic':
+          expiry.add(1, 'month');
+          form.setFieldValue('monthlyFee', 200000);
+          break;
+        case 'Pro':
+          expiry.add(3, 'month');
+          form.setFieldValue('monthlyFee', 300000);
+          break;
+        case 'Premium':
+          expiry.add(1, 'year');
+          form.setFieldValue('monthlyFee', 500000);
+          break;
+      }
+      form.setFieldValue('expiryDate', expiry);
     }
-    
-    return expiry.toISOString().split('T')[0];
   };
 
-  // Update expiry date when join date or membership type changes
-  React.useEffect(() => {
-    if (formData.joinDate && formData.membershipType) {
-      const newExpiryDate = calculateExpiryDate(formData.joinDate, formData.membershipType);
-      setFormData(prev => ({ ...prev, expiryDate: newExpiryDate }));
+  const handleJoinDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const membershipType = form.getFieldValue('membershipType');
+      const expiry = dayjs(date);
+      switch (membershipType) {
+        case 'Basic':
+          expiry.add(1, 'month');
+          break;
+        case 'Pro':
+          expiry.add(3, 'month');
+          break;
+        case 'Premium':
+          expiry.add(1, 'year');
+          break;
+      }
+      form.setFieldValue('expiryDate', expiry);
     }
-  }, [formData.joinDate, formData.membershipType]);
-
-  // Update monthly fee when membership type changes
-  React.useEffect(() => {
-    const fees = {
-      'Basic': 200000,
-      'Pro': 300000,
-      'Premium': 500000
-    };
-    setFormData(prev => ({ 
-      ...prev, 
-      monthlyFee: fees[formData.membershipType as keyof typeof fees] 
-    }));
-  }, [formData.membershipType]);
-
-  // Trainer options for select
-  const trainerOptions = [
-    { value: '', label: 'Murabbiy tanlanmagan' },
-    ...mockTrainers.map(trainer => ({
-      value: trainer.id,
-      label: trainer.name,
-      avatar: trainer.avatar,
-      subtitle: trainer.specialization.join(', ')
-    }))
-  ];
-
-  const membershipOptions = [
-    { value: 'Basic', label: 'Basic - 200,000 UZS/oy' },
-    { value: 'Pro', label: 'Pro - 300,000 UZS/oy' },
-    { value: 'Premium', label: 'Premium - 500,000 UZS/yil' }
-  ];
-
-  const statusOptions = [
-    { value: 'active', label: 'Faol' },
-    { value: 'inactive', label: 'Nofaol' },
-    { value: 'expired', label: 'Muddati Tugagan' }
-  ];
+  };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={member ? 'A\'zoni Tahrirlash' : 'Yangi A\'zo Qo\'shish'} size="lg">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              To'liq Ism *
-            </label>
-            <input
-              type="text"
+    <Modal
+      title={
+        <Title level={4} className="!mb-0">
+          {member ? 'A\'zoni Tahrirlash' : 'Yangi A\'zo Qo\'shish'}
+        </Title>
+      }
+      open={isOpen}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+      destroyOnClose
+    >
+      <Divider />
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        requiredMark={false}
+      >
+        <Row gutter={[16, 0]}>
+          <Col xs={24} md={12}>
+            <Form.Item
               name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Ism va familiyani kiriting"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Email *
-            </label>
-            <input
-              type="email"
+              label="To'liq Ism"
+              rules={[{ required: true, message: 'Ism kiritish majburiy!' }]}
+            >
+              <Input 
+                prefix={<UserOutlined />} 
+                placeholder="Ism va familiyani kiriting"
+                size="large"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
               name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="email@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Telefon *
-            </label>
-            <input
-              type="tel"
+              label="Email"
+              rules={[
+                { required: true, message: 'Email kiritish majburiy!' },
+                { type: 'email', message: 'Noto\'g\'ri email format!' }
+              ]}
+            >
+              <Input 
+                prefix={<MailOutlined />} 
+                placeholder="email@example.com"
+                size="large"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
               name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="+998 90 123 45 67"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              A'zolik Turi *
-            </label>
-            <SearchableSelect
-              options={membershipOptions}
-              value={formData.membershipType}
-              onChange={(value) => setFormData(prev => ({ ...prev, membershipType: value as Member['membershipType'] }))}
-              placeholder="A'zolik turini tanlang"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Qo'shilgan Sana *
-            </label>
-            <input
-              type="date"
+              label="Telefon"
+              rules={[{ required: true, message: 'Telefon kiritish majburiy!' }]}
+            >
+              <Input 
+                prefix={<PhoneOutlined />} 
+                placeholder="+998 90 123 45 67"
+                size="large"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="membershipType"
+              label="A'zolik Turi"
+              rules={[{ required: true, message: 'A\'zolik turini tanlang!' }]}
+            >
+              <Select 
+                placeholder="A'zolik turini tanlang"
+                size="large"
+                onChange={handleMembershipTypeChange}
+              >
+                <Option value="Basic">Basic - 200,000 UZS/oy</Option>
+                <Option value="Pro">Pro - 300,000 UZS/oy</Option>
+                <Option value="Premium">Premium - 500,000 UZS/yil</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
               name="joinDate"
-              value={formData.joinDate}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tugash Sanasi *
-            </label>
-            <input
-              type="date"
+              label="Qo'shilgan Sana"
+              rules={[{ required: true, message: 'Sanani tanlang!' }]}
+            >
+              <DatePicker 
+                style={{ width: '100%' }}
+                size="large"
+                format="DD/MM/YYYY"
+                onChange={handleJoinDateChange}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
               name="expiryDate"
-              value={formData.expiryDate}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Holat
-            </label>
-            <SearchableSelect
-              options={statusOptions}
-              value={formData.status}
-              onChange={(value) => setFormData(prev => ({ ...prev, status: value as Member['status'] }))}
-              placeholder="Holatni tanlang"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Oylik To'lov (UZS) *
-            </label>
-            <input
-              type="number"
+              label="Tugash Sanasi"
+              rules={[{ required: true, message: 'Tugash sanasini tanlang!' }]}
+            >
+              <DatePicker 
+                style={{ width: '100%' }}
+                size="large"
+                format="DD/MM/YYYY"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="status"
+              label="Holat"
+            >
+              <Select size="large">
+                <Option value="active">Faol</Option>
+                <Option value="inactive">Nofaol</Option>
+                <Option value="expired">Muddati Tugagan</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
               name="monthlyFee"
-              value={formData.monthlyFee}
-              onChange={handleChange}
-              required
-              min="0"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Shaxsiy Murabbiy
-            </label>
-            <SearchableSelect
-              options={trainerOptions}
-              value={formData.trainerId || ''}
-              onChange={(value) => setFormData(prev => ({ ...prev, trainerId: value || undefined }))}
-              placeholder="Murabbiyni tanlang (ixtiyoriy)"
-              searchPlaceholder="Murabbiy qidirish..."
-            />
-          </div>
-
+              label="Oylik To'lov (UZS)"
+              rules={[{ required: true, message: 'To\'lov miqdorini kiriting!' }]}
+            >
+              <InputNumber
+                prefix={<DollarOutlined />}
+                style={{ width: '100%' }}
+                size="large"
+                min={0}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24}>
+            <Form.Item
+              name="trainerId"
+              label="Shaxsiy Murabbiy (ixtiyoriy)"
+            >
+              <Select 
+                placeholder="Murabbiyni tanlang"
+                size="large"
+                allowClear
+                showSearch
+                optionFilterProp="children"
+              >
+                {mockTrainers.map((trainer) => (
+                  <Option key={trainer.id} value={trainer.id}>
+                    {trainer.name} - {trainer.specialization.join(', ')}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
           {member && (
             <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Jami Tashriflar
-                </label>
-                <input
-                  type="number"
+              <Col xs={24} md={12}>
+                <Form.Item
                   name="totalVisits"
-                  value={formData.totalVisits}
-                  onChange={handleChange}
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Oxirgi Tashrif
-                </label>
-                <input
-                  type="date"
+                  label="Jami Tashriflar"
+                >
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    size="large"
+                    min={0}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
                   name="lastVisit"
-                  value={formData.lastVisit}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+                  label="Oxirgi Tashrif"
+                >
+                  <DatePicker 
+                    style={{ width: '100%' }}
+                    size="large"
+                    format="DD/MM/YYYY"
+                  />
+                </Form.Item>
+              </Col>
             </>
           )}
-        </div>
+        </Row>
 
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-          >
+        <Divider />
+        
+        <div className="flex justify-end gap-3">
+          <Button size="large" onClick={onClose}>
             Bekor qilish
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          </Button>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading}
+            size="large"
           >
-            {loading && <LoadingSpinner size="sm" />}
             {member ? 'A\'zoni Yangilash' : 'A\'zo Qo\'shish'}
-          </button>
+          </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 }
