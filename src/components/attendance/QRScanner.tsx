@@ -62,7 +62,7 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
         <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
           <strong>Demo uchun:</strong> A'zo ID larini kiriting (masalan: 1, 2, 3, 4) yoki 
-          Members bo'limidan a'zo ID sini ko'ring.
+          Members bo'limidan a\'zo ID sini ko'ring.
         </div>
       </div>
     </Modal>
