@@ -11,6 +11,10 @@ import Trainers from './components/trainers/Trainers';
 import Classes from './components/classes/Classes';
 import Payments from './components/payments/Payments';
 import Equipment from './components/equipment/Equipment';
+import Attendance from './components/attendance/Attendance';
+import Notifications from './components/notifications/Notifications';
+import Reports from './components/reports/Reports';
+import Settings from './components/settings/Settings';
 
 function AppContent() {
   const { user } = useAuth();
@@ -41,49 +45,13 @@ function AppContent() {
       case 'equipment':
         return <Equipment />;
       case 'attendance':
-        return (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 text-center animate-fade-in">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Davomat Kuzatuvi
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Tez orada - QR kod orqali kirish tizimi va qo'lda davomat belgilash
-            </p>
-          </div>
-        );
+        return <Attendance />;
       case 'notifications':
-        return (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 text-center animate-fade-in">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Bildirishnomalar Markazi
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              A'zolik muddati tugayotganligi, to'lov ogohlantirishlari va marketing kampaniyalari uchun avtomatik eslatmalar
-            </p>
-          </div>
-        );
+        return <Notifications />;
       case 'reports':
-        return (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 text-center animate-fade-in">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Moliyaviy Hisobotlar
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Keng qamrovli moliyaviy tahlillar, foyda/zarar hisobotlari va biznes ko'rsatkichlari
-            </p>
-          </div>
-        );
+        return <Reports />;
       case 'settings':
-        return (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 text-center animate-fade-in">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Tizim Sozlamalari
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Sport zali sozlamalari, foydalanuvchi ruxsatlari, to'lov parametrlari va tizim sozlamalarini sozlash
-            </p>
-          </div>
-        );
+        return <Settings />;
       default:
         return <Dashboard />;
     }

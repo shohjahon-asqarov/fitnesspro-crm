@@ -1,5 +1,5 @@
 // Mock API service layer - keyinchalik real backend bilan almashtiriladi
-import { Member, Trainer, GymClass, Equipment, Payment } from '../types';
+import { Member, Trainer, GymClass, Equipment, Payment, Attendance, Notification } from '../types';
 
 // Simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -10,26 +10,18 @@ const STORAGE_KEYS = {
   TRAINERS: 'gym_trainers',
   CLASSES: 'gym_classes',
   EQUIPMENT: 'gym_equipment',
-  PAYMENTS: 'gym_payments'
+  PAYMENTS: 'gym_payments',
+  ATTENDANCE: 'gym_attendance',
+  NOTIFICATIONS: 'gym_notifications'
 };
 
 // Initialize data in localStorage if not exists
 const initializeData = () => {
-  if (!localStorage.getItem(STORAGE_KEYS.MEMBERS)) {
-    localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.TRAINERS)) {
-    localStorage.setItem(STORAGE_KEYS.TRAINERS, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.CLASSES)) {
-    localStorage.setItem(STORAGE_KEYS.CLASSES, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.EQUIPMENT)) {
-    localStorage.setItem(STORAGE_KEYS.EQUIPMENT, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.PAYMENTS)) {
-    localStorage.setItem(STORAGE_KEYS.PAYMENTS, JSON.stringify([]));
-  }
+  Object.values(STORAGE_KEYS).forEach(key => {
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, JSON.stringify([]));
+    }
+  });
 };
 
 // Generic CRUD operations
@@ -99,8 +91,12 @@ export const trainersApi = new ApiService<Trainer>(STORAGE_KEYS.TRAINERS);
 export const classesApi = new ApiService<GymClass>(STORAGE_KEYS.CLASSES);
 export const equipmentApi = new ApiService<Equipment>(STORAGE_KEYS.EQUIPMENT);
 export const paymentsApi = new ApiService<Payment>(STORAGE_KEYS.PAYMENTS);
+export const attendanceApi = new ApiService<Attendance>(STORAGE_KEYS.ATTENDANCE);
+export const notificationsApi = new ApiService<Notification>(STORAGE_KEYS.NOTIFICATIONS);
 
 // Add specialized methods to the service instances
+
+// Members API extensions
 membersApi.getActiveMembers = async function(): Promise<Member[]> {
   const members = await this.getAll();
   return members.filter(member => member.status === 'active');
@@ -121,6 +117,7 @@ membersApi.updateMembershipStatus = async function(id: string, status: Member['s
   return await this.update(id, { status });
 };
 
+// Payments API extensions
 paymentsApi.getOverduePayments = async function(): Promise<Payment[]> {
   const payments = await this.getAll();
   const today = new Date();
@@ -156,6 +153,7 @@ paymentsApi.getTotalRevenue = async function(startDate?: string, endDate?: strin
   return paidPayments.reduce((total, payment) => total + payment.amount, 0);
 };
 
+// Equipment API extensions
 equipmentApi.updateStatus = async function(id: string, status: Equipment['status']): Promise<Equipment | null> {
   const updates: Partial<Equipment> = { status };
   
@@ -179,6 +177,7 @@ equipmentApi.getMaintenanceDue = async function(): Promise<Equipment[]> {
   });
 };
 
+// Classes API extensions
 classesApi.enrollMember = async function(classId: string): Promise<GymClass | null> {
   const gymClass = await this.getById(classId);
   if (!gymClass || gymClass.enrolled >= gymClass.capacity) return null;
@@ -197,8 +196,72 @@ classesApi.unenrollMember = async function(classId: string): Promise<GymClass | 
   });
 };
 
+// Attendance API extensions
+attendanceApi.markAttendance = async function(memberId: string, status: 'present' | 'absent', date: string): Promise<Attendance> {
+  const attendance = await this.getAll();
+  const existingRecord = attendance.find(record => record.memberId === memberId && record.date === date);
+  
+  if (existingRecord) {
+    const updates: Partial<Attendance> = { 
+      status,
+      checkInTime: status === 'present' ? new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : undefined
+    };
+    return await this.update(existingRecord.id, updates) as Attendance;
+  } else {
+    const newRecord: Omit<Attendance, 'id'> = {
+      memberId,
+      date,
+      status,
+      method: 'manual',
+      checkInTime: status === 'present' ? new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : undefined
+    };
+    return await this.create(newRecord);
+  }
+};
+
+attendanceApi.getByDate = async function(date: string): Promise<Attendance[]> {
+  const attendance = await this.getAll();
+  return attendance.filter(record => record.date === date);
+};
+
+attendanceApi.getByMember = async function(memberId: string): Promise<Attendance[]> {
+  const attendance = await this.getAll();
+  return attendance.filter(record => record.memberId === memberId);
+};
+
+// Notifications API extensions
+notificationsApi.send = async function(id: string): Promise<Notification | null> {
+  await delay(1000); // Simulate sending delay
+  return await this.update(id, { 
+    status: 'sent',
+    scheduledAt: new Date().toISOString()
+  });
+};
+
+notificationsApi.markAsRead = async function(id: string): Promise<Notification | null> {
+  return await this.update(id, { status: 'sent' });
+};
+
+notificationsApi.createAutoReminder = async function(type: 'membership' | 'payment', memberIds: string[]): Promise<Notification> {
+  const reminderData: Omit<Notification, 'id'> = {
+    title: type === 'membership' ? 'A\'zolik Muddati Tugayapti' : 'To\'lov Eslatmasi',
+    message: type === 'membership' 
+      ? 'Sizning a\'zolik muddatingiz tez orada tugaydi. Yangilash uchun sport zaliga murojaat qiling.'
+      : 'To\'lov muddati yetib keldi. Iltimos, to\'lovni amalga oshiring.',
+    type,
+    recipients: memberIds,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    channel: 'email'
+  };
+  
+  return await this.create(reminderData);
+};
+
 // Export the service instances with their specialized methods
 export const memberService = membersApi;
 export const paymentService = paymentsApi;
 export const equipmentService = equipmentApi;
 export const classService = classesApi;
+export const attendanceService = attendanceApi;
+export const notificationService = notificationsApi;

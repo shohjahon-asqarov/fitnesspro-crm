@@ -79,6 +79,28 @@ export interface Payment {
   method: 'cash' | 'card' | 'transfer';
 }
 
+export interface Attendance {
+  id: string;
+  memberId: string;
+  date: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status: 'present' | 'absent';
+  method: 'manual' | 'qr' | 'card';
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'membership' | 'payment' | 'marketing' | 'system';
+  recipients: string[];
+  status: 'sent' | 'pending' | 'failed';
+  createdAt: string;
+  scheduledAt?: string;
+  channel: 'email' | 'sms' | 'push';
+}
+
 export interface DashboardStats {
   totalMembers: number;
   activeMembers: number;
