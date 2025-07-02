@@ -2,12 +2,11 @@ import React from 'react';
 import { Card, Row, Col, Typography, Space, Button } from 'antd';
 import { 
   CrownOutlined, 
-  ShieldCheckOutlined, 
+  SafetyOutlined, 
   ThunderboltOutlined, 
   CustomerServiceOutlined, 
   UserOutlined,
   RocketOutlined,
-  SafetyOutlined,
   TrophyOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,7 +34,7 @@ const roles: {
   {
     role: 'manager',
     label: 'Menejer',
-    icon: <ShieldCheckOutlined />,
+    icon: <SafetyOutlined />,
     description: 'A\'zolar, murabbiylar va operatsiyalarni boshqarish',
     color: 'from-blue-500 to-purple-600',
     features: ['A\'zolar boshqaruvi', 'Murabbiylar nazorati', 'Operatsiya boshqaruvi']
