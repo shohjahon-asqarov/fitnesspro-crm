@@ -34,7 +34,6 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { useAuth } from '../../contexts/AuthContext';
 import { mockDashboardStats, monthlyRevenueData, membershipDistribution } from '../../data/mockData';
-import { motion } from 'framer-motion';
 
 const { Title, Text } = Typography;
 
@@ -208,11 +207,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="fade-in">
         <Card className="bg-gradient-to-r from-blue-500 to-purple-600 border-0">
           <div className="text-white">
             <Space direction="vertical" size="small">
@@ -233,18 +228,14 @@ export default function Dashboard() {
             </Space>
           </div>
         </Card>
-      </motion.div>
+      </div>
 
       {/* Stats Grid */}
       <Row gutter={[24, 24]}>
         {stats.map((stat, index) => (
           <Col xs={24} sm={12} lg={6} key={index}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="hover:shadow-lg transition-all duration-300">
+            <div className="slide-up">
+              <Card className="hover:shadow-lg transition-smooth">
                 <Statistic
                   title={stat.title}
                   value={stat.value}
@@ -275,7 +266,7 @@ export default function Dashboard() {
                   </Text>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           </Col>
         ))}
       </Row>
@@ -285,11 +276,7 @@ export default function Dashboard() {
         {/* Revenue Chart */}
         {user?.role && ['admin', 'manager'].includes(user.role) && (
           <Col xs={24} lg={16}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
+            <div className="fade-in">
               <Card 
                 title={
                   <Space>
@@ -332,17 +319,13 @@ export default function Dashboard() {
                   </AreaChart>
                 </ResponsiveContainer>
               </Card>
-            </motion.div>
+            </div>
           </Col>
         )}
 
         {/* Recent Activities */}
         <Col xs={24} lg={user?.role && ['admin', 'manager'].includes(user.role) ? 8 : 12}>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+          <div className="fade-in">
             <Card 
               title={
                 <Space>
@@ -369,16 +352,12 @@ export default function Dashboard() {
                 }))}
               />
             </Card>
-          </motion.div>
+          </div>
         </Col>
 
         {/* Upcoming Classes */}
         <Col xs={24} lg={user?.role && ['admin', 'manager'].includes(user.role) ? 24 : 12}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
+          <div className="fade-in">
             <Card 
               title={
                 <Space>
@@ -427,7 +406,7 @@ export default function Dashboard() {
                 )}
               />
             </Card>
-          </motion.div>
+          </div>
         </Col>
       </Row>
 
@@ -435,11 +414,7 @@ export default function Dashboard() {
       {user?.role && ['admin', 'manager'].includes(user.role) && (
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={12}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
+            <div className="fade-in">
               <Card 
                 title={
                   <Space>
@@ -468,15 +443,11 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
-            </motion.div>
+            </div>
           </Col>
 
           <Col xs={24} lg={12}>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
-            >
+            <div className="fade-in">
               <Card 
                 title={
                   <Space>
@@ -527,7 +498,7 @@ export default function Dashboard() {
                   }
                 />
               </Card>
-            </motion.div>
+            </div>
           </Col>
         </Row>
       )}

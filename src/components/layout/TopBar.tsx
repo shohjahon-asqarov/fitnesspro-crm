@@ -29,7 +29,6 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { motion } from 'framer-motion';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -206,7 +205,7 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
             icon={<GiftOutlined />}
             size="large"
             onClick={() => onSectionChange('members')}
-            className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
+            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
           />
         </Tooltip>
 
@@ -217,7 +216,7 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
             icon={isDark ? <SunOutlined /> : <MoonOutlined />}
             onClick={toggleTheme}
             size="large"
-            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           />
         </Tooltip>
 
@@ -248,7 +247,7 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
               type="text"
               icon={<BellOutlined />}
               size="large"
-              className="hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             />
           </Badge>
         </Dropdown>
@@ -262,24 +261,20 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
           placement="bottomRight"
           arrow
         >
-          <Button type="text" className="h-auto p-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <Button type="text" className="h-auto p-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <Space>
               <Badge dot color="#52c41a" offset={[-8, 8]}>
                 <Avatar src={user?.avatar} icon={<UserOutlined />} size={40} />
               </Badge>
               <div className="text-left hidden sm:block">
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <div className="fade-in">
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                     {user?.name}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {user && getRoleText(user.role)}
                   </div>
-                </motion.div>
+                </div>
               </div>
             </Space>
           </Button>

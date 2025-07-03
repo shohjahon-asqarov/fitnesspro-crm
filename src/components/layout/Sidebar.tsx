@@ -16,7 +16,6 @@ import {
   MenuUnfoldOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion } from 'framer-motion';
 
 const { Sider } = Layout;
 const { Title, Text } = Typography;
@@ -150,11 +149,7 @@ export default function Sidebar({ activeSection, onSectionChange, collapsed, onC
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             {!collapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <div className="fade-in">
                 <Space align="center">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                     <CrownOutlined className="text-white text-lg" />
@@ -168,7 +163,7 @@ export default function Sidebar({ activeSection, onSectionChange, collapsed, onC
                     </Text>
                   </div>
                 </Space>
-              </motion.div>
+              </div>
             )}
             <Tooltip title={collapsed ? 'Kengaytirish' : 'Yig\'ish'} placement="right">
               <div
@@ -217,11 +212,7 @@ export default function Sidebar({ activeSection, onSectionChange, collapsed, onC
                 </div>
               </Tooltip>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-              >
+              <div className="fade-in">
                 <Space className="w-full">
                   <Badge 
                     dot 
@@ -239,7 +230,7 @@ export default function Sidebar({ activeSection, onSectionChange, collapsed, onC
                     </Text>
                   </div>
                 </Space>
-              </motion.div>
+              </div>
             )}
           </div>
         )}

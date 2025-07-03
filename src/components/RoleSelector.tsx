@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Typography, Space, Button } from 'antd';
+import { Card, Row, Col, Typography, Button } from 'antd';
 import { 
   CrownOutlined, 
   SafetyOutlined, 
@@ -11,7 +11,6 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../types';
-import { motion } from 'framer-motion';
 
 const { Title, Text } = Typography;
 
@@ -72,12 +71,7 @@ export default function RoleSelector() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-6">
       <div className="max-w-7xl w-full">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
+        <div className="text-center mb-12 fade-in">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
             <CrownOutlined className="text-white text-4xl" />
           </div>
@@ -91,21 +85,15 @@ export default function RoleSelector() {
             Zamonaviy sport zali boshqaruv platformasiga xush kelibsiz. 
             Tizimga kirish uchun o'z rolingizni tanlang.
           </Text>
-        </motion.div>
+        </div>
 
         {/* Role Cards */}
         <Row gutter={[24, 24]} justify="center">
-          {roles.map((roleItem, index) => (
+          {roles.map((roleItem) => (
             <Col xs={24} sm={12} lg={8} xl={6} key={roleItem.role}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <div className="slide-up">
                 <Card
-                  className="h-full cursor-pointer hover:shadow-2xl transition-all duration-300 border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+                  className="h-full cursor-pointer hover:shadow-2xl transition-smooth scale-hover border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
                   onClick={() => login(roleItem.role)}
                   bodyStyle={{ padding: '32px 24px' }}
                 >
@@ -154,18 +142,13 @@ export default function RoleSelector() {
                     </Button>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             </Col>
           ))}
         </Row>
 
         {/* Features */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-20"
-        >
+        <div className="mt-20 fade-in">
           <Row gutter={[32, 32]} justify="center">
             <Col xs={24} md={8}>
               <Card className="text-center h-full border-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
@@ -209,19 +192,14 @@ export default function RoleSelector() {
               </Card>
             </Col>
           </Row>
-        </motion.div>
+        </div>
 
         {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1 }}
-          className="text-center mt-16"
-        >
+        <div className="text-center mt-16 fade-in">
           <Text type="secondary" className="text-sm">
             © 2024 FitnessPro. Barcha huquqlar himoyalangan. | Versiya 1.0.0
           </Text>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
