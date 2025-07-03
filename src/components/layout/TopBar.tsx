@@ -11,8 +11,7 @@ import {
   Switch,
   Divider,
   Breadcrumb,
-  Tooltip,
-  AutoComplete
+  Tooltip
 } from 'antd';
 import { 
   SearchOutlined,
@@ -48,14 +47,6 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
     { id: 4, message: 'Jihozlar tekshiruvi kerak', type: 'warning', time: '1 soat oldin' },
     { id: 5, message: 'Oylik hisobot tayyor', type: 'success', time: '2 soat oldin' }
   ]);
-
-  const searchOptions = [
-    { value: 'Sardor Abdullayev', label: 'Sardor Abdullayev - A\'zo' },
-    { value: 'Nigina Karimova', label: 'Nigina Karimova - A\'zo' },
-    { value: 'Aziza Nazarova', label: 'Aziza Nazarova - Murabbiy' },
-    { value: 'Morning Yoga', label: 'Morning Yoga - Mashg\'ulot' },
-    { value: 'CrossFit Challenge', label: 'CrossFit Challenge - Mashg\'ulot' },
-  ];
 
   const getRoleText = (role: string) => {
     switch (role) {
@@ -176,23 +167,15 @@ export default function TopBar({ onSectionChange }: TopBarProps) {
         
         {/* Search */}
         <div className="flex-1 max-w-md">
-          <AutoComplete
-            options={searchOptions}
-            value={searchValue}
-            onChange={setSearchValue}
-            onSelect={(value) => {
-              console.log('Selected:', value);
-              setSearchValue('');
-            }}
+          <Input
+            prefix={<SearchOutlined />}
             placeholder="A'zolar, murabbiylar, mashg'ulotlarni qidirish..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            size="large"
             allowClear
-          >
-            <Input
-              prefix={<SearchOutlined />}
-              size="large"
-              style={{ borderRadius: 12 }}
-            />
-          </AutoComplete>
+            style={{ borderRadius: 12 }}
+          />
         </div>
       </div>
 
