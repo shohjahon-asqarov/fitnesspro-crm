@@ -9,7 +9,6 @@ import {
   Avatar, 
   Space, 
   Rate, 
-  Progress, 
   Typography, 
   Statistic,
   Badge,
@@ -20,7 +19,8 @@ import {
   Select,
   InputNumber,
   Upload,
-  message
+  message,
+  Switch
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -37,11 +37,12 @@ import {
   EyeOutlined,
   MoreOutlined,
   UploadOutlined,
-  StarOutlined
+  StarOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined
 } from '@ant-design/icons';
 import { mockTrainers } from '../../data/mockData';
 import { Trainer } from '../../types';
-import { motion } from 'framer-motion';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -52,6 +53,7 @@ export default function Trainers() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
   const [form] = Form.useForm();
 
   const filteredTrainers = trainers.filter(trainer =>
@@ -152,14 +154,91 @@ export default function Trainers() {
     },
   ];
 
+  // Table columns for list view
+  const columns = [
+    {
+      title: 'Murabbiy',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text: string, record: Trainer) => (
+        <Space>
+          <Avatar src={record.avatar} icon={<UserOutlined />} size="small" />
+          <div>
+            <div className="font-medium text-sm">{text}</div>
+            <Text type="secondary" className="text-xs">{record.email}</Text>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      title: 'Mutaxassislik',
+      dataIndex: 'specialization',
+      key: 'specialization',
+      render: (specs: string[]) => (
+        <div>
+          {specs.slice(0, 2).map((spec, idx) => (
+            <Tag key={idx} color={getSpecializationColor(spec)} size="small" className="mb-1">
+              {spec}
+            </Tag>
+          ))}
+          {specs.length > 2 && <Tag size="small">+{specs.length - 2}</Tag>}
+        </div>
+      ),
+    },
+    {
+      title: 'Reyting',
+      dataIndex: 'rating',
+      key: 'rating',
+      render: (rating: number) => (
+        <Space size="small">
+          <Rate disabled defaultValue={rating} allowHalf className="text-xs" />
+          <Text className="text-xs">{rating}</Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Tajriba',
+      dataIndex: 'experience',
+      key: 'experience',
+      render: (exp: number) => <Text className="text-sm">{exp} yil</Text>,
+    },
+    {
+      title: 'A\'zolar',
+      dataIndex: 'assignedMembers',
+      key: 'assignedMembers',
+      render: (count: number) => <Text className="text-sm">{count} ta</Text>,
+    },
+    {
+      title: 'Komissiya',
+      dataIndex: 'commission',
+      key: 'commission',
+      render: (commission: number) => <Text className="text-sm">{commission}%</Text>,
+    },
+    {
+      title: 'Holat',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)} size="small">
+          {getStatusText(status)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Amallar',
+      key: 'actions',
+      render: (_, record: Trainer) => (
+        <Dropdown menu={{ items: getMenuItems(record) }} trigger={['click']}>
+          <Button type="text" icon={<MoreOutlined />} size="small" />
+        </Dropdown>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Title level={2} className="!mb-2">Murabbiylar</Title>
@@ -177,15 +256,11 @@ export default function Trainers() {
             Murabbiy Qo'shish
           </Button>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Search */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <Card>
+      {/* Search and View Mode */}
+      <div className="slide-up">
+        <Card size="small">
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} md={12}>
               <Input
@@ -197,7 +272,18 @@ export default function Trainers() {
                 allowClear
               />
             </Col>
-            <Col xs={24} md={12}>
+            <Col xs={12} md={6}>
+              <Space>
+                <Text type="secondary">Ko'rinish:</Text>
+                <Switch
+                  checkedChildren={<AppstoreOutlined />}
+                  unCheckedChildren={<UnorderedListOutlined />}
+                  checked={viewMode === 'card'}
+                  onChange={(checked) => setViewMode(checked ? 'card' : 'table')}
+                />
+              </Space>
+            </Col>
+            <Col xs={12} md={6}>
               <div className="flex justify-end">
                 <Space>
                   <Text type="secondary">Jami: {filteredTrainers.length} ta murabbiy</Text>
@@ -206,149 +292,196 @@ export default function Trainers() {
             </Col>
           </Row>
         </Card>
-      </motion.div>
+      </div>
 
-      {/* Trainers Grid */}
-      <Row gutter={[24, 24]}>
-        {filteredTrainers.map((trainer, index) => (
-          <Col xs={24} sm={12} lg={8} xl={6} key={trainer.id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -4 }}
-            >
-              <Card
-                className="h-full hover:shadow-lg transition-all duration-300"
-                actions={[
-                  <Tooltip title="Ko'rish">
-                    <EyeOutlined onClick={() => handleViewTrainer(trainer)} />
-                  </Tooltip>,
-                  <Tooltip title="Tahrirlash">
-                    <EditOutlined onClick={() => handleEditTrainer(trainer)} />
-                  </Tooltip>,
-                  <Dropdown menu={{ items: getMenuItems(trainer) }} trigger={['click']}>
-                    <MoreOutlined />
-                  </Dropdown>
-                ]}
-              >
-                {/* Trainer Header */}
-                <div className="text-center mb-4">
-                  <Badge 
-                    status={trainer.status === 'active' ? 'success' : 'error'} 
-                    offset={[-8, 8]}
+      {/* Content */}
+      <Card size="small">
+        {viewMode === 'card' ? (
+          /* Card View */
+          <Row gutter={[16, 16]}>
+            {filteredTrainers.map((trainer) => (
+              <Col xs={24} sm={12} lg={8} xl={6} key={trainer.id}>
+                <div className="slide-up">
+                  <Card
+                    size="small"
+                    className="h-full transition-smooth scale-hover"
+                    actions={[
+                      <Tooltip title="Ko'rish">
+                        <EyeOutlined onClick={() => handleViewTrainer(trainer)} />
+                      </Tooltip>,
+                      <Tooltip title="Tahrirlash">
+                        <EditOutlined onClick={() => handleEditTrainer(trainer)} />
+                      </Tooltip>,
+                      <Dropdown menu={{ items: getMenuItems(trainer) }} trigger={['click']}>
+                        <MoreOutlined />
+                      </Dropdown>
+                    ]}
                   >
-                    <Avatar 
-                      src={trainer.avatar} 
-                      size={80} 
-                      icon={<UserOutlined />}
-                      className="mb-3"
-                    />
-                  </Badge>
-                  <Title level={4} className="!mb-1">{trainer.name}</Title>
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Rate disabled defaultValue={trainer.rating} allowHalf className="text-sm" />
-                    <Text type="secondary" className="text-sm">
-                      {trainer.rating}/5.0
-                    </Text>
-                  </div>
-                  <Tag color={getStatusColor(trainer.status)}>
-                    {getStatusText(trainer.status)}
-                  </Tag>
-                </div>
-
-                {/* Contact Info */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <MailOutlined className="text-gray-400" />
-                    <Text className="truncate flex-1" title={trainer.email}>
-                      {trainer.email}
-                    </Text>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <PhoneOutlined className="text-gray-400" />
-                    <Text>{trainer.phone}</Text>
-                  </div>
-                </div>
-
-                {/* Specializations */}
-                <div className="mb-4">
-                  <Text strong className="text-sm block mb-2">Mutaxassislik:</Text>
-                  <div className="flex flex-wrap gap-1">
-                    {trainer.specialization.slice(0, 2).map((spec, idx) => (
-                      <Tag key={idx} color={getSpecializationColor(spec)} className="text-xs">
-                        {spec}
-                      </Tag>
-                    ))}
-                    {trainer.specialization.length > 2 && (
-                      <Tag className="text-xs">+{trainer.specialization.length - 2}</Tag>
-                    )}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <Row gutter={[8, 8]} className="mb-4">
-                  <Col span={12}>
-                    <Card size="small" className="text-center bg-blue-50 border-blue-200">
-                      <Statistic
-                        title="A'zolar"
-                        value={trainer.assignedMembers}
-                        prefix={<TeamOutlined />}
-                        valueStyle={{ fontSize: '16px', color: '#1890ff' }}
-                      />
-                    </Card>
-                  </Col>
-                  <Col span={12}>
-                    <Card size="small" className="text-center bg-green-50 border-green-200">
-                      <Statistic
-                        title="Tajriba"
-                        value={trainer.experience}
-                        suffix="yil"
-                        prefix={<TrophyOutlined />}
-                        valueStyle={{ fontSize: '16px', color: '#52c41a' }}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-
-                {/* Commission */}
-                <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <DollarOutlined className="text-orange-600" />
-                      <Text className="text-sm font-medium">Komissiya</Text>
-                    </div>
-                    <Text className="text-lg font-bold text-orange-600">
-                      {trainer.commission}%
-                    </Text>
-                  </div>
-                </div>
-
-                {/* Schedule Preview */}
-                <div>
-                  <Text strong className="text-sm block mb-2 flex items-center gap-1">
-                    <CalendarOutlined />
-                    Jadval:
-                  </Text>
-                  <div className="space-y-1">
-                    {trainer.schedule.slice(0, 2).map((time, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        {time}
+                    {/* Trainer Header */}
+                    <div className="text-center mb-3">
+                      <Badge 
+                        status={trainer.status === 'active' ? 'success' : 'error'} 
+                        offset={[-8, 8]}
+                      >
+                        <Avatar 
+                          src={trainer.avatar} 
+                          size={60} 
+                          icon={<UserOutlined />}
+                          className="mb-2"
+                        />
+                      </Badge>
+                      <Title level={5} className="!mb-1 !text-sm">{trainer.name}</Title>
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Rate disabled defaultValue={trainer.rating} allowHalf className="text-xs" />
+                        <Text type="secondary" className="text-xs">
+                          {trainer.rating}/5.0
+                        </Text>
                       </div>
-                    ))}
-                    {trainer.schedule.length > 2 && (
-                      <Text type="secondary" className="text-xs">
-                        +{trainer.schedule.length - 2} ta boshqa vaqt
-                      </Text>
-                    )}
-                  </div>
+                      <Tag color={getStatusColor(trainer.status)} size="small">
+                        {getStatusText(trainer.status)}
+                      </Tag>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className="space-y-1 mb-3 text-xs">
+                      <div className="flex items-center gap-1">
+                        <MailOutlined className="text-gray-400" style={{ fontSize: '10px' }} />
+                        <Text className="truncate flex-1 text-xs" title={trainer.email}>
+                          {trainer.email}
+                        </Text>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <PhoneOutlined className="text-gray-400" style={{ fontSize: '10px' }} />
+                        <Text className="text-xs">{trainer.phone}</Text>
+                      </div>
+                    </div>
+
+                    {/* Specializations */}
+                    <div className="mb-3">
+                      <Text strong className="text-xs block mb-1">Mutaxassislik:</Text>
+                      <div className="flex flex-wrap gap-1">
+                        {trainer.specialization.slice(0, 2).map((spec, idx) => (
+                          <Tag key={idx} color={getSpecializationColor(spec)} className="text-xs">
+                            {spec}
+                          </Tag>
+                        ))}
+                        {trainer.specialization.length > 2 && (
+                          <Tag className="text-xs">+{trainer.specialization.length - 2}</Tag>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <Row gutter={[4, 4]} className="mb-3">
+                      <Col span={12}>
+                        <Card size="small" className="text-center bg-blue-50 border-blue-200 p-1">
+                          <Statistic
+                            title="A'zolar"
+                            value={trainer.assignedMembers}
+                            prefix={<TeamOutlined />}
+                            valueStyle={{ fontSize: '12px', color: '#1890ff' }}
+                          />
+                        </Card>
+                      </Col>
+                      <Col span={12}>
+                        <Card size="small" className="text-center bg-green-50 border-green-200 p-1">
+                          <Statistic
+                            title="Tajriba"
+                            value={trainer.experience}
+                            suffix="yil"
+                            prefix={<TrophyOutlined />}
+                            valueStyle={{ fontSize: '12px', color: '#52c41a' }}
+                          />
+                        </Card>
+                      </Col>
+                    </Row>
+
+                    {/* Commission */}
+                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <DollarOutlined className="text-orange-600" style={{ fontSize: '12px' }} />
+                          <Text className="text-xs font-medium">Komissiya</Text>
+                        </div>
+                        <Text className="text-sm font-bold text-orange-600">
+                          {trainer.commission}%
+                        </Text>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-              </Card>
-            </motion.div>
-          </Col>
-        ))}
-      </Row>
+              </Col>
+            ))}
+          </Row>
+        ) : (
+          /* Table View */
+          <div className="fade-in">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    {columns.map((col) => (
+                      <th key={col.key} className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        {col.title}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredTrainers.map((trainer) => (
+                    <tr key={trainer.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-4 py-2">
+                        <Space>
+                          <Avatar src={trainer.avatar} icon={<UserOutlined />} size="small" />
+                          <div>
+                            <div className="font-medium text-sm">{trainer.name}</div>
+                            <Text type="secondary" className="text-xs">{trainer.email}</Text>
+                          </div>
+                        </Space>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div>
+                          {trainer.specialization.slice(0, 2).map((spec, idx) => (
+                            <Tag key={idx} color={getSpecializationColor(spec)} size="small" className="mb-1">
+                              {spec}
+                            </Tag>
+                          ))}
+                          {trainer.specialization.length > 2 && <Tag size="small">+{trainer.specialization.length - 2}</Tag>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Space size="small">
+                          <Rate disabled defaultValue={trainer.rating} allowHalf className="text-xs" />
+                          <Text className="text-xs">{trainer.rating}</Text>
+                        </Space>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Text className="text-sm">{trainer.experience} yil</Text>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Text className="text-sm">{trainer.assignedMembers} ta</Text>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Text className="text-sm">{trainer.commission}%</Text>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Tag color={getStatusColor(trainer.status)} size="small">
+                          {getStatusText(trainer.status)}
+                        </Tag>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Dropdown menu={{ items: getMenuItems(trainer) }} trigger={['click']}>
+                          <Button type="text" icon={<MoreOutlined />} size="small" />
+                        </Dropdown>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </Card>
 
       {/* Add/Edit Trainer Modal */}
       <Modal

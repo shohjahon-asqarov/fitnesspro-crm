@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Card, 
   Table, 
@@ -20,12 +19,12 @@ import {
   Divider,
   Pagination,
   Empty,
-  Spin
+  Spin,
+  Switch
 } from 'antd';
 import { 
   PlusOutlined, 
   SearchOutlined, 
-  FilterOutlined, 
   MoreOutlined, 
   EditOutlined, 
   DeleteOutlined, 
@@ -37,7 +36,9 @@ import {
   DownloadOutlined,
   ReloadOutlined,
   UserOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined
 } from '@ant-design/icons';
 import { Member } from '../../types';
 import { useMembers } from '../../hooks/useMembers';
@@ -182,9 +183,9 @@ export default function Members() {
       key: 'name',
       render: (text: string, record: Member) => (
         <Space>
-          <Avatar src={record.avatar} icon={<UserOutlined />} />
+          <Avatar src={record.avatar} icon={<UserOutlined />} size="small" />
           <div>
-            <div className="font-medium">{text}</div>
+            <div className="font-medium text-sm">{text}</div>
             <Text type="secondary" className="text-xs">{record.email}</Text>
           </div>
         </Space>
@@ -195,7 +196,7 @@ export default function Members() {
       dataIndex: 'membershipType',
       key: 'membershipType',
       render: (type: string) => (
-        <Tag color={getMembershipColor(type)} icon={getMembershipIcon(type)}>
+        <Tag color={getMembershipColor(type)} icon={getMembershipIcon(type)} size="small">
           {type}
         </Tag>
       ),
@@ -208,17 +209,17 @@ export default function Members() {
         <Select
           value={status}
           size="small"
-          style={{ width: 120 }}
+          style={{ width: 100 }}
           onChange={(value) => handleStatusChange(record.id, value)}
         >
           <Option value="active">
-            <Tag color="success">Faol</Tag>
+            <Tag color="success" size="small">Faol</Tag>
           </Option>
           <Option value="inactive">
-            <Tag color="default">Nofaol</Tag>
+            <Tag color="default" size="small">Nofaol</Tag>
           </Option>
           <Option value="expired">
-            <Tag color="error">Muddati tugagan</Tag>
+            <Tag color="error" size="small">Muddati tugagan</Tag>
           </Option>
         </Select>
       ),
@@ -228,9 +229,9 @@ export default function Members() {
       dataIndex: 'phone',
       key: 'phone',
       render: (phone: string) => (
-        <Space>
-          <PhoneOutlined />
-          <Text copyable>{phone}</Text>
+        <Space size="small">
+          <PhoneOutlined style={{ fontSize: '12px' }} />
+          <Text copyable className="text-xs">{phone}</Text>
         </Space>
       ),
     },
@@ -241,9 +242,9 @@ export default function Members() {
       render: (date: string, record: Member) => {
         const isExpiring = new Date(date) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         return (
-          <Space>
-            <CalendarOutlined />
-            <Text type={isExpiring ? 'danger' : 'secondary'}>
+          <Space size="small">
+            <CalendarOutlined style={{ fontSize: '12px' }} />
+            <Text type={isExpiring ? 'danger' : 'secondary'} className="text-xs">
               {new Date(date).toLocaleDateString('uz-UZ')}
             </Text>
             {isExpiring && <Badge status="error" />}
@@ -256,7 +257,7 @@ export default function Members() {
       dataIndex: 'monthlyFee',
       key: 'monthlyFee',
       render: (fee: number) => (
-        <Text strong>{fee.toLocaleString()} UZS</Text>
+        <Text strong className="text-xs">{fee.toLocaleString()} UZS</Text>
       ),
     },
     {
@@ -295,7 +296,7 @@ export default function Members() {
           }}
           trigger={['click']}
         >
-          <Button type="text" icon={<MoreOutlined />} />
+          <Button type="text" icon={<MoreOutlined />} size="small" />
         </Dropdown>
       ),
     },
@@ -315,6 +316,68 @@ export default function Members() {
 
     return { activeCount, expiredCount, totalRevenue, expiringCount };
   }, [members]);
+
+  // Card view component
+  const renderCardView = () => (
+    <Row gutter={[16, 16]}>
+      {paginatedMembers.map((member) => (
+        <Col xs={24} sm={12} lg={8} xl={6} key={member.id}>
+          <Card
+            size="small"
+            className="transition-smooth scale-hover"
+            actions={[
+              <Tooltip title="Ko'rish">
+                <EyeOutlined onClick={() => setSelectedMember(member)} />
+              </Tooltip>,
+              <Tooltip title="Tahrirlash">
+                <EditOutlined onClick={() => {
+                  setEditingMember(member);
+                  setShowForm(true);
+                }} />
+              </Tooltip>,
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'delete',
+                      label: 'O\'chirish',
+                      icon: <DeleteOutlined />,
+                      danger: true,
+                      onClick: () => handleDeleteMember(member),
+                    },
+                  ],
+                }}
+                trigger={['click']}
+              >
+                <MoreOutlined />
+              </Dropdown>
+            ]}
+          >
+            <div className="text-center">
+              <Avatar src={member.avatar} icon={<UserOutlined />} size={48} className="mb-2" />
+              <Title level={5} className="!mb-1 !text-sm">{member.name}</Title>
+              <Text type="secondary" className="text-xs block mb-2">{member.email}</Text>
+              
+              <div className="flex justify-center gap-1 mb-2">
+                <Tag color={getMembershipColor(member.membershipType)} icon={getMembershipIcon(member.membershipType)} size="small">
+                  {member.membershipType}
+                </Tag>
+                <Tag color={getStatusColor(member.status)} size="small">
+                  {getStatusText(member.status)}
+                </Tag>
+              </div>
+              
+              <div className="text-xs text-gray-500 space-y-1">
+                <div>{member.phone}</div>
+                <div>{member.monthlyFee.toLocaleString()} UZS/oy</div>
+                <div>Tugash: {new Date(member.expiryDate).toLocaleDateString('uz-UZ')}</div>
+              </div>
+            </div>
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  );
 
   return (
     <div className="space-y-6">
@@ -354,50 +417,50 @@ export default function Members() {
 
       {/* Statistics */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={6}>
+          <Card size="small">
             <Statistic
               title="Jami A'zolar"
               value={members.length}
               prefix={<UserOutlined />}
-              valueStyle={{ color: '#3f8600' }}
+              valueStyle={{ color: '#3f8600', fontSize: '18px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={6}>
+          <Card size="small">
             <Statistic
               title="Faol A'zolar"
               value={stats.activeCount}
               prefix={<Badge status="success" />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#1890ff', fontSize: '18px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={6}>
+          <Card size="small">
             <Statistic
               title="Muddati Tugaydi"
               value={stats.expiringCount}
               prefix={<ExclamationCircleOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              valueStyle={{ color: '#faad14', fontSize: '18px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={6}>
+          <Card size="small">
             <Statistic
               title="Oylik Daromad"
               value={stats.totalRevenue}
               formatter={(value) => `${Number(value).toLocaleString()} UZS`}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: '18px' }}
             />
           </Card>
         </Col>
       </Row>
 
       {/* Filters */}
-      <Card>
+      <Card size="small">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={8}>
             <Input
@@ -411,7 +474,7 @@ export default function Members() {
               allowClear
             />
           </Col>
-          <Col xs={12} md={4}>
+          <Col xs={12} md={3}>
             <Select
               placeholder="Holat"
               value={filterStatus}
@@ -420,6 +483,7 @@ export default function Members() {
                 setCurrentPage(1);
               }}
               style={{ width: '100%' }}
+              size="middle"
             >
               <Option value="all">Barcha Holatlar</Option>
               <Option value="active">Faol</Option>
@@ -427,7 +491,7 @@ export default function Members() {
               <Option value="expired">Muddati Tugagan</Option>
             </Select>
           </Col>
-          <Col xs={12} md={4}>
+          <Col xs={12} md={3}>
             <Select
               placeholder="A'zolik"
               value={filterMembership}
@@ -436,6 +500,7 @@ export default function Members() {
                 setCurrentPage(1);
               }}
               style={{ width: '100%' }}
+              size="middle"
             >
               <Option value="all">Barcha A'zoliklar</Option>
               <Option value="Basic">Basic</Option>
@@ -443,7 +508,18 @@ export default function Members() {
               <Option value="Premium">Premium</Option>
             </Select>
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={12} md={4}>
+            <Space>
+              <Text type="secondary">Ko'rinish:</Text>
+              <Switch
+                checkedChildren={<AppstoreOutlined />}
+                unCheckedChildren={<UnorderedListOutlined />}
+                checked={viewMode === 'card'}
+                onChange={(checked) => setViewMode(checked ? 'card' : 'table')}
+              />
+            </Space>
+          </Col>
+          <Col xs={12} md={6}>
             <Space className="w-full justify-end">
               <Text type="secondary">Sahifada:</Text>
               <Select
@@ -453,6 +529,7 @@ export default function Members() {
                   setCurrentPage(1);
                 }}
                 style={{ width: 80 }}
+                size="middle"
               >
                 <Option value={10}>10</Option>
                 <Option value={20}>20</Option>
@@ -464,21 +541,25 @@ export default function Members() {
         </Row>
       </Card>
 
-      {/* Table */}
-      <Card>
+      {/* Content */}
+      <Card size="small">
         <Spin spinning={loading}>
           {filteredMembers.length === 0 ? (
             <Empty description="A'zolar topilmadi" />
           ) : (
             <>
-              <Table
-                columns={columns}
-                dataSource={paginatedMembers}
-                rowKey="id"
-                pagination={false}
-                scroll={{ x: 800 }}
-                size="middle"
-              />
+              {viewMode === 'table' ? (
+                <Table
+                  columns={columns}
+                  dataSource={paginatedMembers}
+                  rowKey="id"
+                  pagination={false}
+                  scroll={{ x: 800 }}
+                  size="small"
+                />
+              ) : (
+                renderCardView()
+              )}
               <Divider />
               <div className="flex justify-between items-center">
                 <Text type="secondary">
@@ -491,6 +572,7 @@ export default function Members() {
                   onChange={setCurrentPage}
                   showSizeChanger={false}
                   showQuickJumper
+                  size="small"
                 />
               </div>
             </>
